@@ -15,7 +15,7 @@ env:
     - INSTANCE_NAME=${INSTANCE_BASE}-${VERSION}
     - ZONE=us-west2-a
     - MACHINE_TYPE=g1-small
-    - IMAGE=ubuntu-1804-bionic-v20190204
+    - IMAGE=ubuntu-2004-focal-v20200529
     - IMAGE_PROJECT=ubuntu-os-cloud
     - BOOT_DISK_SIZE_GB=10
     - SERVICE_ACCOUNT=opensiddur-deploy-1@opensiddur-client.iam.gserviceaccount.com
