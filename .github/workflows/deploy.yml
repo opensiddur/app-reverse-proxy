@@ -70,5 +70,5 @@ jobs:
                 --boot-disk-device-name=${{steps.vars.outputs.INSTANCE_NAME}} \
                 --service-account=${{env.SERVICE_ACCOUNT}} \
                 --metadata-from-file startup-script=setup/gcloud-startup-script.sh \
-                --metadata BRANCH=${steps.vars.outputs.BRANCH},enable-oslogin=true
+                --metadata BRANCH=${{steps.vars.outputs.BRANCH}},enable-oslogin=true
 
