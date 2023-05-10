@@ -40,11 +40,20 @@ INSTANCE_BASE=${PROJECT}-proxy-${BRANCH//\//-}
 echo "Configure nginx..."
 cat conf/nginx.conf.tmpl | envsubst '$DNS_NAME $APP_DNS_NAME $INSTALL_DIR' > /etc/nginx/sites-enabled/app-proxy.conf
 
-echo "Waiting a bit until app.opensiddur.org can be redirected here..."
-sleep 600
+
+echo "Wait for DNS propagation..."
+PUBLIC_IP=$(curl icanhazip.com)
+gcloud logging -q write instance "${INSTANCE_NAME}: Running startup script from ${PUBLIC_IP}. Waiting for DNS change of ${DNS_NAME}." --severity=INFO
+while [[ $(dig +short ${DNS_NAME} @resolver1.opendns.com) != "${PUBLIC_IP}" ]];
+do
+    echo "Waiting 1 min for ${DNS_NAME} to resolve to ${PUBLIC_IP}..."
+    sleep 60;
+done
+gcloud logging -q write instance "${INSTANCE_NAME}: DNS propagation for ${DNS_NAME} to ${PUBLIC_IP} has completed successfully." --severity=INFO
 
 echo "Get an SSL certificate..."
 certbot --nginx -n --domain ${DNS_NAME} --email efraim@opensiddur.org --no-eff-email --agree-tos --redirect
+gcloud logging -q write instance "${INSTANCE_NAME}: SSL certificate has been obtained." --severity=INFO
 
 echo "Scheduling SSL Certificate renewal..."
 cat << EOF > /etc/cron.daily/certbot_renewal
@@ -55,6 +64,7 @@ chmod +x /etc/cron.daily/certbot_renewal
 
 echo "Restarting nginx..."
 systemctl restart nginx
+gcloud logging -q write instance "${INSTANCE_NAME}: Web server is up." --severity=INFO
 
 echo "Stopping prior instances..."
 ALL_PRIOR_INSTANCES=$(gcloud compute instances list --filter="status=RUNNING AND name~'${INSTANCE_BASE}'" | \
@@ -67,3 +77,5 @@ then
 else
     echo "No prior instances found for ${INSTANCE_BASE}";
 fi
+gcloud logging -q write instance "${INSTANCE_NAME}: startup script completed successfully." --severity=INFO
+echo "Done"
