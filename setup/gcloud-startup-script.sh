@@ -40,7 +40,6 @@ INSTANCE_BASE=${PROJECT}-proxy-${BRANCH//\//-}
 echo "Configure nginx..."
 cat conf/nginx.conf.tmpl | envsubst '$DNS_NAME $APP_DNS_NAME $INSTALL_DIR' > /etc/nginx/sites-enabled/app-proxy.conf
 
-
 echo "Wait for DNS propagation..."
 PUBLIC_IP=$(curl icanhazip.com)
 gcloud logging -q write instance "${INSTANCE_NAME}: Running startup script from ${PUBLIC_IP}. Waiting for DNS change of ${DNS_NAME}." --severity=INFO
